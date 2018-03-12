@@ -1,26 +1,28 @@
 package proxy;
 import java.net.*;
 import java.io.*;
-public class ProxyServer {
-    public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = null;
-        boolean listening = true;
-        int port = 10000;   //default
-        try {
-            port = Integer.parseInt(args[0]);
-        } catch (Exception e) {
-            //ignore me
-        }
-        try {
-            serverSocket = new ServerSocket(port);
-            System.out.println("Started on: " + port);
-        } catch (IOException e) {
-            System.err.println("Could not listen on port: " + args[0]);
-            System.exit(-1);
-        }
-        while (listening) {
-            new ProxyThread(serverSocket.accept()).start();
-        }
-        serverSocket.close();
+
+public final class ProxyServer {
+    public static void main(String argv[]) throws Exception {
+	// Get the port number from the command line.
+	int port = (new Integer(argv[0])).intValue();
+
+	// Establish the listen socket.
+	ServerSocket socket = new ServerSocket(port);
+
+	// Process HTTP service requests in an infinite loop.
+	while (true) {
+	    // Listen for a TCP connection request.
+	    Socket connection = socket.accept();
+
+	    // Construct an object to process the HTTP request message.
+	    ProxyRequest request = new ProxyRequest(connection);
+
+	    // Create a new thread to process the request.
+	    Thread thread = new Thread(request);
+
+	    // Start the thread.
+	    thread.start();
+	}
     }
 }
